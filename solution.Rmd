@@ -1,0 +1,51 @@
+################ Assignment 3###############
+####### Q1 (1) ########
+library(readxl)
+HEt <- read_excel("data/HE.xlsx")
+#transpose the data so that each country is in a column
+HE<-t(HEt[,-1])
+colnames(HE)<-HEt[[1]]
+#take logarithm and confine data to 1990-2012
+lHE<-log(HE[20:42,])
+T<-length(lHE[,1])
+N<-length(lHE[1,])
+betahat<-rep(0,N)
+alphahat<-rep(0,N)
+dif_lHE = lHE[2:T,]-lHE[1:T-1,]
+
+for(i in c(1:N)){
+  #formula for betahitIV
+  betahat[i]<-(sum(dif_lHE[1:(T-2),i]*lHE[1:(T-2),i]))^(-1)*(sum(dif_lHE[2:(T-1),i]*lHE[1:(T-2),i]))
+  #formula for alphahatIV
+  alphahat[i]<-sum(lHE[3:(T),i])/(T-2)-betahat[i]*sum(lHE[2:(T-1),i])/(T-2)
+}
+pdf("betahat.pdf")
+plot(betahat)
+dev.off()
+
+pdf("alphahat.pdf")
+plot(alphahat)
+dev.off()
+####### Q1 (2) ########
+library(readxl)
+GDPt <- read_excel("data/GDP.xlsx")
+#transpose data so each country is in a column
+GDP<-t(GDPt[,-1])
+colnames(GDP)<-GDPt[[1]]
+lGDP<-log(GDP[20:42,])
+T<-length(lGDP[,1])
+N<-length(lGDP[1,])
+thetahat<-rep(0,N)
+thetabar<-rep(0,N)
+t<-seq(1,T,by=1)
+lGDPtilde<-matrix(0,nrow=T,ncol=N)
+for(i in 1:N){
+  #Subtract column means from each column to find lGDPtilde
+  lGDPtilde[,i]<-lGDP[,i]-colMeans(lGDP)[i]
+}
+for(i in c(1:N)){
+  #formula for thetahat
+  thetahat[i]<-(sum((t-mean(t))^2))^(-1)*sum((t-mean(t))*lGDPtilde[,i])
+  #formula for thetabar
+  thetabar[i]<-sum(diff(lGDP[,i]))/(T-1)
+}
